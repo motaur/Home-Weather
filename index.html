@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/select2@4.0.3/dist/css/select2.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/0.8.2/css/flag-icon.min.css">
+ 
+  <script src="countries.js"></script>
+  <script src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://unpkg.com/jquery@3.1.1/dist/jquery.js"></script>
+  <script src="https://unpkg.com/select2@4.0.3/dist/js/select2.js"></script>
+
+  <title>My New Page</title>
+
+  <style>    
+    select 
+    {
+      width: 300px;
+    }
+    .flag-text 
+    { 
+      margin-left: 10px; 
+    }
+  </style>
+</head>
+
+<body>
+  <iframe src="https://duckduckgo.com/search.html?width=408&duck=yes&prefill=Search DuckDuckGo" style="margin:1%;overflow:hidden;padding:0;width:541px;height:60px;" frameborder="0"></iframe>
+
+  <div class="container"> 
+    <label>Country:</label>         
+    <div id="countrySelector"></div>
+    <label>City:</label>
+    <div id="citySelector"></div> 
+  </div>              
+     
+  
+  <!-- using string template here to work around HTML <option> placement restriction -->
+  <script type="text/x-template" id="demo-template">
+      <div>
+        <p>{{ selected }}</p>
+        <select2 :options="options" v-model="selected">
+          <option disabled value="0">Select</option>
+        </select2>
+      </div>
+    </script>
+
+  <script type="text/x-template" id="select2-template">
+      <select>
+          <slot></slot>
+      </select>
+  </script>
+
+  <script src="index.js"></script> 
+
+</body>
+
+</html>

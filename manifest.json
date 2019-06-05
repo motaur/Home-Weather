@@ -1,0 +1,13 @@
+{
+    "name": "My Forecasts",
+    "version": "1.0",
+    "description": "Replace your new tab page with forecast",
+    "manifest_version": 2,
+    "chrome_url_overrides" : {
+        "newtab": "index.html"
+      },
+      "icons": {"128": "./images/128.png" },
+      "permissions": [        
+        "chrome://favicon/", "history"
+      ]
+  }
