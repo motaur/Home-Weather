@@ -4,44 +4,98 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
-  
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">  
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <link rel="stylesheet" href="https://unpkg.com/select2@4.0.3/dist/css/select2.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/0.8.2/css/flag-icon.min.css">
- 
+
   <script src="countries.js"></script>
-  <script src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="https://unpkg.com/jquery@3.1.1/dist/jquery.js"></script>
   <script src="https://unpkg.com/select2@4.0.3/dist/js/select2.js"></script>
 
   <title>My New Page</title>
 
-  <style>    
+  <style>
     select 
     {
       width: 300px;
     }
+
     .flag-text 
-    { 
-      margin-left: 10px; 
+    {
+      margin-left: 10px;
+    }
+
+    #searchbox
+    {
+      margin:1%;
+      overflow:hidden;      
+      width:541px;
+      height:60px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #currentforecast
+    {
+      
     }
   </style>
 </head>
 
 <body>
-  <iframe src="https://duckduckgo.com/search.html?width=408&duck=yes&prefill=Search DuckDuckGo" style="margin:1%;overflow:hidden;padding:0;width:541px;height:60px;" frameborder="0"></iframe>
+  <iframe src="https://duckduckgo.com/search.html?width=408&duck=yes&prefill=Search DuckDuckGo"
+    frameborder="0" id="searchbox"></iframe>
 
-  <div class="container"> 
-    <label>Country:</label>         
+  <div class="container" id="cityChoose">
+
     <div id="countrySelector"></div>
-    <label>City:</label>
-    <div id="citySelector"></div> 
-  </div>              
-     
+    <br>
+    <div id="citySelector"></div>
+    <br>
+    <div v-show="city != null" id="button">
+      <button onClick="onSubmit()" class="btn waves-effect waves-light" type="submit" name="action">Submit
+        <i class="material-icons right">send</i>
+      </button>
+
+      <label style="margin:10px">
+          <input type="checkbox" id="remember"/>
+          <span>Remember choise</span>
+      </label>
+
+    </div>
+  </div>
+
+
+  <div v-show="city != null" class="row" id="currentforecast">
+    <div class="col s12 m2">
+      <div class="card small">
+        <div class="card-image">
+          <img src="http://icons.iconarchive.com/icons/papirus-team/papirus-apps/256/weather-icon.png">
+          <span style="color: grey" class="card-title">{{temp}}°C</span>
+        </div>
+        <div class="card-content">
+          <p>{{city}}</p>
+        </div>
+        <div class="card-action">
+          <a href="#">5 day forecast</a>
+        </div>
+      </div>
+    </div>
+  </div>
+       
   
   <!-- using string template here to work around HTML <option> placement restriction -->
+  <script type="text/x-template" id="demo-template">
+    <div>        
+      <select2 :options="options" v-model="selected">
+        <option disabled value="0">Select</option>
+      </select2>
+    </div>
+  </script>
+
   <script type="text/x-template" id="demo-template">
       <div>
         <p>{{ selected }}</p>
@@ -51,13 +105,13 @@
       </div>
     </script>
 
-  <script type="text/x-template" id="select2-template">
+  <script type="text/x-template" id="country-template">
       <select>
           <slot></slot>
       </select>
   </script>
 
-  <script src="index.js"></script> 
+  <script src="index.js"></script>
 
 </body>
 

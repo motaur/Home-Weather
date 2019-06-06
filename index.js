@@ -1,11 +1,21 @@
 var api = "localhost:8080/"
-var city;
-var country;
-var cityAdded = false
+
+var countrySelector
+var citySelector
+var currentforecast
+
+var cityChoose = new Vue({
+  el: '#cityChoose',
+  data:
+  {
+    city: null,
+    country: null
+  }
+})
 
 Vue.component('select2', {
     props: ['options', 'value'],
-    template: '#select2-template',
+    template: '#country-template',
     mounted: function () {
       var vm = this
       $(this.$el)
@@ -17,7 +27,7 @@ Vue.component('select2', {
         .trigger('change')
         // emit event on change.
         .on('change', function () {
-          vm.$emit('input', this.value)
+          vm.$emit('input', this.value)         
         })
     },
     watch: {
@@ -25,13 +35,21 @@ Vue.component('select2', {
         // update value
         $(this.$el)
             .val(value)
-            .trigger('change') 
+            .trigger('change')
             
-            if(cityAdded == false)
-            {
-              cityadded = true
-              addCitySelector(value)
-            }  
+          console.log("selector changed " + value)
+          
+          if(value.length == 2) //country changes
+          {
+            console.log("type: country")
+            cityChoose.country = value
+            cityLoad(value)             //load city list
+          }
+          else if (value.length > 2)//city changes - do nothing
+          {
+            console.log("type: city")
+            cityChoose.city = value
+          }
       },
       options: function (options) {
         // update options
@@ -41,57 +59,90 @@ Vue.component('select2', {
     destroyed: function () {
       $(this.$el).off().select2('destroy')
     }
-  })
+  })  
   
-var countrySelector = new Vue({
+countrySelector = new Vue({
   el: '#countrySelector',
   template: '#demo-template',    
   data: {
-    selected: "",
+    selected: null,
     options: countries
   }
 })
 
-  function addCitySelector(country)
-  {
-    new Vue({    
-      el: '#citySelector',
-      template: '#demo-template',    
-      data: {
-        selected: "",
-        options: []
-      },
-      created()
-      {
-        $.get(`http://${api}cities?country=${country}`, (data, status)=>
-        {   
-            console.log(data)
-
-            for(var i in data)
-                this.options.push({id: data[i], text: data[i].key})
-
-            console.log(this.options)
-        })
-      }
-    })        
-
-
-    //     fetch(`http://${api}cities?country=${country}`, {mode: 'no-cors'})
-    //       .then(response => response.json())
-    //       .then(json => {              
-    //         this.options = json.options
-    //       })
-    //   }
-      
-    // }) 
+citySelector = new Vue({    
+  el: '#citySelector',
+  template: '#demo-template',    
+  data: {
+    selected: "",
+    options: []
   }
-  
+})
 
-  function formatCountry (country) {
-              if (!country.id) { return country.text; }
-              var $country = $(
-                '<span class="flag-icon flag-icon-'+ country.id.toLowerCase() +' flag-icon-squared"></span>' +
-                '<span class="flag-text">'+ country.text+"</span>"
-              );
-              return $country;
-            };
+currentforecast = new Vue({
+  el: '#currentforecast',
+  data:
+  {
+    city: null,    
+    date: null,
+    humidity: null,
+    temp: null
+  }
+})
+
+if(localStorage.getItem('city') && localStorage.getItem('country'))
+{    
+    cityChoose.city = localStorage.getItem('city')
+    cityChoose.country = localStorage.getItem('country')
+    console.log("retrived form local storage: " + cityChoose.city + " " + cityChoose.country)
+
+    $.get(`http://${api}currentforecasts?country=${cityChoose.country}&city=${cityChoose.city}`, (data)=>
+    {
+      currentforecast.city = data.city
+      currentforecast.temp = data.temp 
+    })
+  }
+
+
+//helpers functrions
+function cityLoad(country)
+{ 
+  citySelector.selected = ""
+  cityChoose.city = null
+
+  $.get(`http://${api}cities?country=${cityChoose.country}`, (data)=>
+  {            
+      citySelector.options = data
+  }) 
+}
+
+
+function formatCountry (country) 
+{
+  if (!country.id) { return country.text; }
+  var $country = $(
+    '<span class="flag-icon flag-icon-'+ country.id.toLowerCase() +' flag-icon-squared"></span>' +
+    '<span class="flag-text">'+ country.text+"</span>"
+  )
+  return $country
+}
+
+function onSubmit()
+{
+    $.get(`http://${api}currentforecasts?country=${cityChoose.country}&city=${cityChoose.city}`, (data)=>
+    {        
+      currentforecast.city = data.city
+      currentforecast.temp = data.temp      
+      
+      if($('#remember').prop("checked") == true)
+      {
+          console.log("Checkbox is checked. saved to local storage: " + cityChoose.city + " " + cityChoose.country)
+
+          localStorage.setItem("city", cityChoose.city)
+          localStorage.setItem("country", cityChoose.country)
+      }
+
+    })     
+     
+  
+}
