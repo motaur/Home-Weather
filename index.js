@@ -1,15 +1,20 @@
+//init vars
 var api = "localhost:8080/"
-
 var countrySelector
 var citySelector
 var currentforecast
+var settings
+var interval = 60000 //refresh interval milliseconds
 
-var cityChoose = new Vue({
-  el: '#cityChoose',
+//iniv vue components
+settings = new Vue({
+  el: '#settings',
   data:
   {
     city: null,
-    country: null
+    country: null,
+    isSettingsShown: false,
+    forecastDays: 1
   }
 })
 
@@ -42,13 +47,13 @@ Vue.component('select2', {
           if(value.length == 2) //country changes
           {
             console.log("type: country")
-            cityChoose.country = value
+            settings.country = value
             cityLoad(value)             //load city list
           }
           else if (value.length > 2)//city changes - do nothing
           {
             console.log("type: city")
-            cityChoose.city = value
+            settings.city = value
           }
       },
       options: function (options) {
@@ -86,36 +91,23 @@ currentforecast = new Vue({
     city: null,    
     date: null,
     humidity: null,
-    temp: null
+    temp: null,
+    description: null,
+    icon: null
   }
 })
-
-if(localStorage.getItem('city') && localStorage.getItem('country'))
-{    
-    cityChoose.city = localStorage.getItem('city')
-    cityChoose.country = localStorage.getItem('country')
-    console.log("retrived form local storage: " + cityChoose.city + " " + cityChoose.country)
-
-    $.get(`http://${api}currentforecasts?country=${cityChoose.country}&city=${cityChoose.city}`, (data)=>
-    {
-      currentforecast.city = data.city
-      currentforecast.temp = data.temp 
-    })
-  }
-
 
 //helpers functrions
 function cityLoad(country)
 { 
   citySelector.selected = ""
-  cityChoose.city = null
+  settings.city = null
 
-  $.get(`http://${api}cities?country=${cityChoose.country}`, (data)=>
+  $.get(`http://${api}cities?country=${settings.country}`, (data)=>
   {            
       citySelector.options = data
   }) 
 }
-
 
 function formatCountry (country) 
 {
@@ -129,20 +121,59 @@ function formatCountry (country)
 
 function onSubmit()
 {
-    $.get(`http://${api}currentforecasts?country=${cityChoose.country}&city=${cityChoose.city}`, (data)=>
+    $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
     {        
       currentforecast.city = data.city
-      currentforecast.temp = data.temp      
+      currentforecast.temp = data.temp 
+      currentforecast.description = data.description
+      currentforecast.icon = data.icon      
       
       if($('#remember').prop("checked") == true)
       {
-          console.log("Checkbox is checked. saved to local storage: " + cityChoose.city + " " + cityChoose.country)
+          console.log("Checkbox is checked. saved to local storage: " + settings.city + " " + settings.country)
 
-          localStorage.setItem("city", cityChoose.city)
-          localStorage.setItem("country", cityChoose.country)
+          localStorage.setItem("city", settings.city)
+          localStorage.setItem("country", settings.country)
       }
-
-    })     
-     
-  
+    }) 
 }
+
+function showSettings()
+{ 
+  if(settings.isSettingsShown)   
+    settings.isSettingsShown = false 
+  else   
+    settings.isSettingsShown = true   
+}
+
+function refresh()
+{
+  console.log("refresh forecast")
+  if(currentforecast.city != null)
+
+  $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
+  {
+    currentforecast.city = data.city
+    currentforecast.temp = data.temp 
+    currentforecast.description = data.description
+    currentforecast.icon = data.icon
+  })
+}
+
+//main script
+if(localStorage.getItem('city') && localStorage.getItem('country'))
+{    
+    settings.city = localStorage.getItem('city')
+    settings.country = localStorage.getItem('country')
+    console.log("retrived form local storage: " + settings.city + " " + settings.country)
+
+    $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
+    {
+      currentforecast.city = data.city
+      currentforecast.temp = data.temp 
+      currentforecast.description = data.description
+      currentforecast.icon = data.icon
+    })
+}
+
+setInterval(refresh, interval) //update forecast every minure
