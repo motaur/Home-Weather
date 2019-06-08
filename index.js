@@ -132,26 +132,22 @@ function formatCountry (country)
 function onSubmit()
 {  
     settings.days = $( "#days" ).val()  
-    $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
-    {        
-      currentforecast.city = data.city
-      currentforecast.temp = data.temp 
-      currentforecast.description = data.description
-      currentforecast.icon = data.icon             
-      
-      if($('#remember').prop("checked") == true)
-      {
-          console.log("Checkbox is checked. saved to local storage: " + settings.city + " " + settings.country + " " +  settings.days)
 
-          localStorage.setItem("city", settings.city)
-          localStorage.setItem("country", settings.country)
-          localStorage.setItem("days", settings.days)
-      }
-    })    
+    callCurrent()    
 
     if(settings.days > 0)       
-      callForecasts()  
-    forecastDays.days = settings.days     
+      callForecasts()
+
+    forecastDays.days = settings.days  
+    
+    if($('#remember').prop("checked") == true)
+    {
+        console.log("Checkbox is checked. saved to local storage: " + settings.city + " " + settings.country + " " +  settings.days)
+
+        localStorage.setItem("city", settings.city)
+        localStorage.setItem("country", settings.country)
+        localStorage.setItem("days", settings.days)
+    }
 }
 
 function showSettings()
