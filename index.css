@@ -1,0 +1,38 @@
+select 
+{
+  width: 200px;      
+}
+.flag-text 
+{
+  margin-left: 10px;
+}
+.icon-block 
+{
+  padding: 0 15px;
+}
+.icon-block .material-icons 
+{
+    font-size: inherit;
+}
+#settings
+{
+  margin: 20px;
+  position: absolute;
+  top: 40px
+}
+#searchbox
+{      
+  width:548px;
+  height:40px;      
+}
+#footer
+{
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+}
+#forecastDays
+{
+    position: absolute;
+    right: 10px;
+}

@@ -5,6 +5,7 @@ var citySelector
 var currentforecast
 var settings
 var interval = 60000 //refresh interval milliseconds
+var forecastDays
 
 //iniv vue components
 settings = new Vue({
@@ -14,7 +15,7 @@ settings = new Vue({
     city: null,
     country: null,
     isSettingsShown: false,
-    forecastDays: 1
+    days: 0
   }
 })
 
@@ -97,12 +98,21 @@ currentforecast = new Vue({
   }
 })
 
+forecastDays = new Vue({
+  el: '#forecastDays',  
+  data: { 
+    days: 0,
+    forecasts: []
+  }
+})
+
 //helpers functrions
 function cityLoad(country)
 { 
   citySelector.selected = ""
   settings.city = null
 
+  //load city list for country
   $.get(`http://${api}cities?country=${settings.country}`, (data)=>
   {            
       citySelector.options = data
@@ -120,22 +130,28 @@ function formatCountry (country)
 }
 
 function onSubmit()
-{
+{  
+    settings.days = $( "#days" ).val()  
     $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
     {        
       currentforecast.city = data.city
       currentforecast.temp = data.temp 
       currentforecast.description = data.description
-      currentforecast.icon = data.icon      
+      currentforecast.icon = data.icon             
       
       if($('#remember').prop("checked") == true)
       {
-          console.log("Checkbox is checked. saved to local storage: " + settings.city + " " + settings.country)
+          console.log("Checkbox is checked. saved to local storage: " + settings.city + " " + settings.country + " " +  settings.days)
 
           localStorage.setItem("city", settings.city)
           localStorage.setItem("country", settings.country)
+          localStorage.setItem("days", settings.days)
       }
-    }) 
+    })    
+
+    if(settings.days > 0)       
+      callForecasts()  
+    forecastDays.days = settings.days     
 }
 
 function showSettings()
@@ -147,17 +163,15 @@ function showSettings()
 }
 
 function refresh()
-{
-  console.log("refresh forecast")
+{  
   if(currentforecast.city != null)
-
-  $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
   {
-    currentforecast.city = data.city
-    currentforecast.temp = data.temp 
-    currentforecast.description = data.description
-    currentforecast.icon = data.icon
-  })
+    console.log("refresh current")
+    callCurrent()
+    
+    if(settings.days > 0)      
+      callForecasts()
+  }  
 }
 
 //main script
@@ -165,8 +179,32 @@ if(localStorage.getItem('city') && localStorage.getItem('country'))
 {    
     settings.city = localStorage.getItem('city')
     settings.country = localStorage.getItem('country')
-    console.log("retrived form local storage: " + settings.city + " " + settings.country)
+    settings.days = localStorage.getItem('days')
 
+    console.log("retrived form local storage: " + settings.city + " " + settings.country + " " + settings.days + " days")
+
+    callCurrent()
+
+    if(settings.days > 0)      
+      callForecasts()
+
+    forecastDays.days = settings.days  
+
+}
+
+function callForecasts()
+{
+  $.get(`http://${api}forecasts?country=${settings.country}&city=${settings.city}&days=${settings.days}`, (data)=>
+  {
+      forecastDays.forecasts = data.forecasts
+      console.log(forecastDays.forecasts)
+      forecastDays.days = settings.days
+  })
+    
+}
+
+function callCurrent()
+{
     $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
     {
       currentforecast.city = data.city
@@ -176,4 +214,4 @@ if(localStorage.getItem('city') && localStorage.getItem('country'))
     })
 }
 
-setInterval(refresh, interval) //update forecast every minure
+setInterval(refresh, interval) //update forecast
