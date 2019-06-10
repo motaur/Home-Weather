@@ -1,13 +1,15 @@
 //init vars
-var api = "localhost:8080/"
+const API = "weather-service-0.herokuapp.com/"
+const LOCATION = "http://ip-api.com/json"
+const INTERVAL = 60000 //refresh interval milliseconds
+
 var countrySelector
 var citySelector
 var currentforecast
 var settings
-var interval = 60000 //refresh interval milliseconds
 var forecastDays
 
-//iniv vue components
+//init vue components
 settings = new Vue({
   el: '#settings',
   data:
@@ -113,7 +115,7 @@ function cityLoad(country)
   settings.city = null
 
   //load city list for country
-  $.get(`http://${api}cities?country=${settings.country}`, (data)=>
+  $.get(`http://${API}cities?country=${settings.country}`, (data)=>
   {            
       citySelector.options = data
   }) 
@@ -170,6 +172,28 @@ function refresh()
   }  
 }
 
+function callForecasts()
+{
+  $.get(`http://${API}forecasts?country=${settings.country}&city=${settings.city}&days=${settings.days}`, (data)=>
+  {
+      forecastDays.forecasts = data.forecasts
+      console.log(forecastDays.forecasts)
+      forecastDays.days = settings.days
+  })
+    
+}
+
+function callCurrent()
+{
+    $.get(`http://${API}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
+    {
+      currentforecast.city = data.city
+      currentforecast.temp = data.temp 
+      currentforecast.description = data.description
+      currentforecast.icon = data.icon
+    })
+}
+
 //main script
 if(localStorage.getItem('city') && localStorage.getItem('country'))
 {    
@@ -187,27 +211,25 @@ if(localStorage.getItem('city') && localStorage.getItem('country'))
     forecastDays.days = settings.days  
 
 }
-
-function callForecasts()
+else //detect automatically
 {
-  $.get(`http://${api}forecasts?country=${settings.country}&city=${settings.city}&days=${settings.days}`, (data)=>
+  $.get(LOCATION, (data)=>
   {
-      forecastDays.forecasts = data.forecasts
-      console.log(forecastDays.forecasts)
-      forecastDays.days = settings.days
+    settings.city = data.city
+    settings.country = data.countryCode    
+
+    console.log("nothing saved in local storage, detect automatically: " + data.city + ", " + data.countryCode)
+
+    callCurrent()
   })
-    
 }
 
-function callCurrent()
-{
-    $.get(`http://${api}currentforecasts?country=${settings.country}&city=${settings.city}`, (data)=>
-    {
-      currentforecast.city = data.city
-      currentforecast.temp = data.temp 
-      currentforecast.description = data.description
-      currentforecast.icon = data.icon
-    })
-}
+//buttons init
+var settingsButton = document.getElementById('settingsButton')
+settingsButton.onclick = ()=>{showSettings()}
 
-setInterval(refresh, interval) //update forecast
+var submitButton = document.getElementById('submitButton')
+submitButton.onclick = ()=>{onSubmit()}
+
+//update forecast with interval
+setInterval(refresh, INTERVAL) 
