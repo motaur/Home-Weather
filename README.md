@@ -6,3 +6,5 @@ go to chrome://extensions/ in your chrome browser, then
 enable Developer mode,
 click "Load unpacked",
 choose a folder with the extension and it will automaticaly replace your New tab page
+### Libraries
+Vuejs, JQuery, Materializecss
